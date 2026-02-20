@@ -8,6 +8,7 @@ import { logger } from '../../utils/logger.js';
 import { initBrowserBase, createCursor } from '../engine/launcher.js';
 import { registry } from '../registry.js';
 import { tryGotoWithCheck } from '../utils/page.js';
+import { isTurboModeEnabled } from '../../utils/runtimeFlags.js';
 
 /**
  * Worker 类 - 封装单个浏览器实例
@@ -116,7 +117,8 @@ export class Worker {
         this.browser = sharedBrowser;
         this.page = await sharedBrowser.newPage();
         this.page.authState = { isHandlingAuth: false };
-        const humanizeCursorMode = this.globalConfig?.browser?.humanizeCursor;
+        const turboMode = isTurboModeEnabled(this.globalConfig);
+        const humanizeCursorMode = turboMode ? false : this.globalConfig?.browser?.humanizeCursor;
         this.page._humanizeCursorMode = humanizeCursorMode;
         // true 表示使用项目维护的 ghost-cursor
         if (humanizeCursorMode === true) {
@@ -170,7 +172,8 @@ export class Worker {
     async _recreatePage() {
         this.page = await this.browser.newPage();
         this.page.authState = { isHandlingAuth: false };
-        const humanizeCursorMode = this.globalConfig?.browser?.humanizeCursor;
+        const turboMode = isTurboModeEnabled(this.globalConfig);
+        const humanizeCursorMode = turboMode ? false : this.globalConfig?.browser?.humanizeCursor;
         this.page._humanizeCursorMode = humanizeCursorMode;
         if (humanizeCursorMode === true) {
             this.page.cursor = createCursor(this.page);
@@ -204,7 +207,8 @@ export class Worker {
         this.browser = base.context;
         this.page = base.page;
         this.page.authState = { isHandlingAuth: false };
-        const humanizeCursorMode = this.globalConfig?.browser?.humanizeCursor;
+        const turboMode = isTurboModeEnabled(this.globalConfig);
+        const humanizeCursorMode = turboMode ? false : this.globalConfig?.browser?.humanizeCursor;
         this.page._humanizeCursorMode = humanizeCursorMode;
         if (humanizeCursorMode === true) {
             this.page.cursor = createCursor(this.page);
@@ -257,7 +261,7 @@ export class Worker {
                             sharedWorker.browser = this.browser;
                             sharedWorker.page = await this.browser.newPage();
                             sharedWorker.page.authState = { isHandlingAuth: false };
-                            const sharedCursorMode = this.globalConfig?.browser?.humanizeCursor;
+                            const sharedCursorMode = isTurboModeEnabled(this.globalConfig) ? false : this.globalConfig?.browser?.humanizeCursor;
                             sharedWorker.page._humanizeCursorMode = sharedCursorMode;
                             if (sharedCursorMode === true) {
                                 sharedWorker.page.cursor = createCursor(sharedWorker.page);

@@ -26,6 +26,7 @@ const { logger } = await import('../utils/logger.js');
 const { createQueueManager, createGlobalRouter } = await import('./index.js');
 const { isUnderSupervisor } = await import('../utils/ipc.js');
 const { loadTodayStats } = await import('../utils/stats.js');
+const { isTurboModeEnabled } = await import('../utils/runtimeFlags.js');
 
 // ==================== 初始化配置 ====================
 
@@ -176,6 +177,9 @@ async function startServer() {
         if (!isLoginMode) {
             logger.info('服务器', `流式心跳模式: ${KEEPALIVE_MODE}`);
             logger.info('服务器', `最大并发: ${MAX_CONCURRENT}，队列缓冲: ${QUEUE_BUFFER}，最大图片数量: ${IMAGE_LIMIT}`);
+            if (isTurboModeEnabled(config)) {
+                logger.warn('服务器', '低配提速模式已启用（-turbo）：已自动关闭拟人鼠标并强化页面渲染优化');
+            }
         }
     });
 }

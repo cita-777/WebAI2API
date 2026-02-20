@@ -17,6 +17,7 @@ import os from 'os';
 import { createCursor } from 'ghost-cursor-playwright-port';
 import { getRealViewport, clamp, random, sleep } from './utils.js';
 import { logger } from '../../utils/logger.js';
+import { isTurboModeEnabled } from '../../utils/runtimeFlags.js';
 import { getBrowserProxy, cleanupProxy } from '../../utils/proxy.js';
 
 // 全局状态：用于在登录模式下管理残留进程与复用上下文
@@ -276,6 +277,7 @@ export async function initBrowserBase(config, options = {}) {
     logger.info('浏览器', `[${markLabel}] 启动浏览器实例...`);
 
     const browserConfig = config?.browser || {};
+    const turboMode = isTurboModeEnabled(config);
 
     // 获取指纹对象（指纹文件放在对应的 userDataDir 内）
     const fingerprintPath = path.join(userDataDir, 'fingerprint.json');
@@ -309,7 +311,17 @@ export async function initBrowserBase(config, options = {}) {
             // 告诉网页用户倾向于减少动画 (触发网页自身的优化)
             'ui.prefersReducedMotion': 1,
             // 站点隔离
-            ...(browserConfig.fission === false ? { 'fission.autostart': false } : {})
+            ...(browserConfig.fission === false ? { 'fission.autostart': false } : {}),
+            // 低配提速模式：进一步降低前台页面渲染和脚本开销
+            ...(turboMode
+                ? {
+                    'dom.animations-api.core.enabled': false,
+                    'dom.animations-api.getAnimations.enabled': false,
+                    'layout.frame_rate': 1,
+                    'layers.acceleration.disabled': true,
+                    'gfx.webrender.software': false
+                }
+                : {})
         }
     };
 
@@ -326,6 +338,7 @@ export async function initBrowserBase(config, options = {}) {
     // 构建状态描述
     const statusParts = [];
     statusParts.push(`无头模式: ${headlessMode ? '是' : '否'}`);
+    if (turboMode) statusParts.push('低配提速: 已启用');
     if (proxyObj) statusParts.push('代理: 已配置');
     logger.info('浏览器', `[${markLabel}] 浏览器已启动 (${statusParts.join(', ')})`);
 
@@ -357,8 +370,11 @@ export async function initBrowserBase(config, options = {}) {
     // CSS 性能优化注入
     const cssInjectConfig = browserConfig.cssInject || {};
     const cssToInject = [];
+    const enableAnimationOptimization = turboMode || cssInjectConfig.animation;
+    const enableFilterOptimization = turboMode || cssInjectConfig.filter;
+    const enableFontOptimization = turboMode || cssInjectConfig.font;
 
-    if (cssInjectConfig.animation) {
+    if (enableAnimationOptimization) {
         cssToInject.push(`
             *, *::before, *::after {
                 /* 过渡和关键帧动画 */
@@ -380,7 +396,7 @@ export async function initBrowserBase(config, options = {}) {
         `);
     }
 
-    if (cssInjectConfig.filter) {
+    if (enableFilterOptimization) {
         cssToInject.push(`
             *, *::before, *::after {
                 filter: none !important;
@@ -392,7 +408,7 @@ export async function initBrowserBase(config, options = {}) {
         `);
     }
 
-    if (cssInjectConfig.font) {
+    if (enableFontOptimization) {
         cssToInject.push(`
             html, body {
                 text-rendering: optimizeSpeed !important;
@@ -417,9 +433,10 @@ export async function initBrowserBase(config, options = {}) {
             })();
         `);
         const enabledFeatures = [];
-        if (cssInjectConfig.animation) enabledFeatures.push('动画禁用');
-        if (cssInjectConfig.filter) enabledFeatures.push('滤镜禁用');
-        if (cssInjectConfig.font) enabledFeatures.push('字体优化');
+        if (enableAnimationOptimization) enabledFeatures.push('动画禁用');
+        if (enableFilterOptimization) enabledFeatures.push('滤镜禁用');
+        if (enableFontOptimization) enabledFeatures.push('字体优化');
+        if (turboMode) enabledFeatures.push('低配提速默认优化');
         logger.info('浏览器', `[${markLabel}] CSS 注入已启用: ${enabledFeatures.join(', ')}`);
     }
 

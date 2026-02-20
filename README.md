@@ -95,6 +95,10 @@
    # Linux 系统 - 虚拟显示启动
    npm start -- -xvfb -vnc
 
+   # 低配服务器提速模式（推荐单核/低内存机器）
+   # 会自动关闭拟人鼠标并强化页面渲染优化，大幅降低 CPU 占用
+   npm start -- -turbo -xvfb -vnc
+
    # 登录模式 (会临时强行禁用无头模式和自动化)
    npm start -- -login (-xvfb -vnc)
    ```
@@ -184,6 +188,16 @@ http://localhost:3000
 ## 📖 使用方法
 
 ### 运行模式说明
+
+> [!TIP]
+> **低配机器建议开启 `-turbo`**:
+> - 自动关闭 `humanizeCursor`（避免 ghost-cursor 额外开销）
+> - 自动启用动画/滤镜/字体渲染优化注入
+> - 追加浏览器低负载偏好设置，减少页面动画与渲染压力
+> - 适合 **单核 2G** 这类机器优先保活和吞吐
+>
+> 启动示例：`npm start -- -turbo -xvfb -vnc`
+> 也可在 WebUI 的「浏览器设置 -> 低配提速模式 (turbo)」中开启
 
 > [!NOTE]
 > **关于有头/无头模式**:

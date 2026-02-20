@@ -9,6 +9,7 @@ const formData = reactive({
     path: '',
     headless: false,
     fission: true,
+    turbo: false,
     humanizeCursor: false, // false | true | 'camou'
     // CSS 性能优化
     cssAnimation: false,
@@ -30,6 +31,7 @@ onMounted(async () => {
     formData.path = cfg.path || '';
     formData.headless = cfg.headless || false;
     formData.fission = cfg.fission !== false; // 默认 true
+    formData.turbo = cfg.turbo === true;
     // humanizeCursor: false=禁用, true=ghost-cursor, 'camou'=Camoufox内置
     formData.humanizeCursor = cfg.humanizeCursor ?? false;
 
@@ -62,6 +64,7 @@ const handleSave = async () => {
             font: formData.cssFont
         },
         fission: formData.fission,
+        turbo: formData.turbo,
         humanizeCursor: formData.humanizeCursor,
         proxy: {
             enable: formData.proxyEnable,
@@ -125,12 +128,29 @@ const handleSave = async () => {
                     </div>
                 </a-col>
 
+                <!-- 低配提速模式 -->
+                <a-col :xs="24" :md="12">
+                    <div style="margin-bottom: 8px;">
+                        <div style="font-weight: 600; margin-bottom: 4px;">低配提速模式 (turbo)</div>
+                        <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px;">
+                            面向单核/低内存机器的激进性能优化模式<br>
+                            启用后会自动关闭拟人鼠标并增强渲染优化<br>
+                            <span style="color: #faad14;">⚠️ 可能增加被网站识别为自动化的风险</span>
+                        </div>
+                        <a-switch v-model:checked="formData.turbo" />
+                        <span style="margin-left: 8px;">
+                            {{ formData.turbo ? '已启用 (重启后生效)' : '未启用' }}
+                        </span>
+                    </div>
+                </a-col>
+
                 <!-- 拟人鼠标轨迹 -->
                 <a-col :xs="24" :md="24">
                     <div style="margin-bottom: 8px;">
                         <div style="font-weight: 600; margin-bottom: 4px;">拟人鼠标轨迹模式</div>
                         <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 8px;">
                             控制鼠标点击的拟人化程度，影响性能和反爬检测风险
+                            <br>若启用 Turbo，本项会在运行时被自动强制为禁用
                         </div>
                         <a-segmented v-model:value="formData.humanizeCursor" block :options="[
                             { label: '禁用 (性能最佳)', value: false },

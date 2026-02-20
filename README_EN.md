@@ -98,6 +98,10 @@ This project supports both **source code execution** and **Docker containerized 
    # Linux - Start with virtual display
    npm start -- -xvfb -vnc
 
+   # Turbo mode for low-spec servers (recommended for single-core/low-memory)
+   # Automatically disables humanized cursor and applies stronger rendering optimizations
+   npm start -- -turbo -xvfb -vnc
+
    # Login mode (Temporarily forces disabling headless mode and automation)
    npm start -- -login (-xvfb -vnc)
    ```
@@ -187,6 +191,15 @@ http://localhost:3000
 ## 📖 Usage
 
 ### Running Mode Description
+
+> [!TIP]
+> **Enable `-turbo` on low-spec machines**:
+> - Forces `humanizeCursor` off (avoids ghost-cursor overhead)
+> - Forces CSS animation/filter/font optimizations
+> - Adds low-load browser preferences to reduce rendering/script pressure
+> - Best for **single-core 2GB**-class servers prioritizing stability and throughput
+>
+> Example: `npm start -- -turbo -xvfb -vnc`
 
 > [!NOTE]
 > **Regarding Headful/Headless Mode**:
