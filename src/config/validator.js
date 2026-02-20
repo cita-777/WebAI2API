@@ -89,6 +89,12 @@ export function validateBrowserConfig(data) {
         errors.push('fission 必须是布尔值');
     }
 
+
+    // Turbo 校验
+    if (data.turbo !== undefined && typeof data.turbo !== 'boolean') {
+        errors.push('turbo 必须是布尔值');
+    }
+
     // Proxy 校验
     if (data.proxy) {
         if (data.proxy.enable !== undefined && typeof data.proxy.enable !== 'boolean') {

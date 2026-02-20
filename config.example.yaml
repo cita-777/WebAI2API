@@ -162,6 +162,12 @@ browser:
   # - true:   使用项目优化的 ghost-cursor（更拟人化，如不会点击正中心，但性能稍差）
   # - "camou": 使用 Camoufox 内置轨迹（性能与拟人化的平衡）
   humanizeCursor: true
+  # 启动参数包含 -turbo 时会强制关闭拟人鼠标以换取性能
+
+  # 低配提速模式（可在 WebUI 图形化设置中开关）
+  # 开启后会自动关闭拟人鼠标，并启用更激进的渲染降载策略
+  # ⚠️ 会增加自动化识别风险，建议仅在低配服务器使用
+  turbo: false
 
   # 站点隔离 (fission.autostart)
   # 开启保持 Firefox 默认开启状态
